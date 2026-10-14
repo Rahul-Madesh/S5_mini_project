@@ -1,0 +1,14 @@
+{
+  "name": "smart-mess",
+  "version": "1.0.0",
+  "description": "AI-Powered Smart Mess Meal Pre-Booking and Food Waste Reduction Agent",
+  "private": true,
+  "scripts": {
+    "setup:db": "npm run setup:db --prefix backend",
+    "build": "npm run build --prefix frontend",
+    "start": "node backend/src/index.js",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "test:api": "node scripts/api-test.js"
+  }
+}
