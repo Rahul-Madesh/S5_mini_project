@@ -80,34 +80,7 @@ S5_mini_project/
 
 ---
 
-### 2. Environment Configuration
-Navigate to `smart-mess/backend/` and copy `.env.example` to `.env`:
-```bash
-cd smart-mess/backend
-copy .env.example .env
-```
-Open `.env` and fill in your MySQL credentials and a secure 32+ character JWT secret:
-```env
-PORT=5000
-NODE_ENV=development
-JWT_SECRET=super_secret_jwt_random_key_min_32_characters_123456
-JWT_EXPIRES_IN=24h
-HOME_COLLEGE_NAME=National Institute of Technology
-ADMIN_NAME=Mess Administrator
-ADMIN_EMAIL=admin@mess.local
-ADMIN_PASSWORD=AdminSecurePass123!
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=smart_mess_db
-CORS_ORIGIN=http://localhost:5173
-AUTH_RATE_LIMIT_MAX=50
-```
-
----
-
-### 3. Database Initialization
+### 2. Database Initialization
 
 #### Option A: Automated Setup Script (Recommended)
 Run the idempotent setup script which creates the database, executes `schema.sql`, seeds the 4 menu options, and creates the admin account:
