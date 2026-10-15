@@ -14,6 +14,7 @@ const pollRoutes = require('./routes/polls');
 const { router: mealIntentRoutes } = require('./routes/mealIntent');
 const adminRoutes = require('./routes/admin');
 const { errorHandler, notFoundHandler } = require('./middleware/error');
+const { syncDailyPolls, startDailyPollScheduler } = require('./services/pollService');
 
 const app = express();
 
@@ -101,8 +102,15 @@ app.use(errorHandler);
 
 // Start server
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`[Smart Mess Server] Running on http://localhost:${PORT} in ${NODE_ENV} mode`);
+    try {
+      await syncDailyPolls();
+      startDailyPollScheduler();
+      console.log('[Daily Poll Lifecycle] Initialized daily poll scheduler.');
+    } catch (pollErr) {
+      console.error('[Daily Poll Lifecycle] Startup poll sync failed:', pollErr);
+    }
   });
 }
 

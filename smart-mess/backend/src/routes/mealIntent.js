@@ -3,6 +3,7 @@ const { z } = require('zod');
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const { validateBody, validateQuery } = require('../middleware/validate');
+const pollService = require('../services/pollService');
 
 const router = express.Router();
 
@@ -20,27 +21,22 @@ const mealIntentSchema = z.object({
 });
 
 // Helper: Determine the upcoming meal details and cutoff timestamp
-async function getUpcomingMealInfo() {
-  // Check active poll first
-  const [activePolls] = await db.query(
-    `SELECT meal_date, meal_type, closes_at
-     FROM polls
-     WHERE is_active = 1
-     ORDER BY id DESC
-     LIMIT 1`
-  );
+async function getUpcomingMealInfo(dateOverride = null) {
+  // Sync and fetch active poll first
+  const activePoll = await pollService.getActivePoll(dateOverride);
 
   let targetDate;
   let targetType;
   let cutoffDate;
 
-  if (activePolls.length > 0) {
-    const p = activePolls[0];
-    targetDate = p.meal_date; // 'YYYY-MM-DD'
-    targetType = p.meal_type;
+  if (activePoll) {
+    targetDate = typeof activePoll.meal_date === 'string'
+      ? activePoll.meal_date
+      : pollService.getLocalDateString(new Date(activePoll.meal_date));
+    targetType = activePoll.meal_type;
 
-    if (p.closes_at) {
-      cutoffDate = new Date(p.closes_at);
+    if (activePoll.closes_at) {
+      cutoffDate = new Date(activePoll.closes_at);
     } else {
       // Default: end of the day before the meal (23:59:59)
       const mealD = new Date(`${targetDate}T00:00:00`);
@@ -50,9 +46,8 @@ async function getUpcomingMealInfo() {
     }
   } else {
     // Fallback: tomorrow lunch
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    targetDate = tomorrow.toISOString().split('T')[0];
+    const todayStr = dateOverride || pollService.getLocalDateString();
+    targetDate = pollService.getTomorrowDateString(todayStr);
     targetType = 'lunch';
 
     const mealD = new Date(`${targetDate}T00:00:00`);
@@ -76,7 +71,8 @@ async function getUpcomingMealInfo() {
 // Returns pending status, meal date/type, user answer, and canChange flag
 router.get('/notifications/meal-intent', requireAuth, async (req, res, next) => {
   try {
-    const upcoming = await getUpcomingMealInfo();
+    const testDate = req.headers['x-test-date'] || (req.query.test_date && process.env.NODE_ENV !== 'production' ? req.query.test_date : null);
+    const upcoming = await getUpcomingMealInfo(testDate);
     const userId = req.user.id;
 
     const [responses] = await db.query(
@@ -114,7 +110,8 @@ router.put('/meal-intent', requireAuth, validateBody(mealIntentSchema), async (r
     const { mealDate, mealType, willEat } = req.body;
     const userId = req.user.id;
 
-    const upcoming = await getUpcomingMealInfo();
+    const testDate = req.headers['x-test-date'] || (req.query.test_date && process.env.NODE_ENV !== 'production' ? req.query.test_date : null);
+    const upcoming = await getUpcomingMealInfo(testDate);
 
     // Verify this is for the upcoming meal
     if (mealDate !== upcoming.date || mealType !== upcoming.type) {

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6b0d6e42-27cd-4cd0-941d-8ea7dbef4f55",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "E:\\S5_mini_pro\\smart-mess\\.archify\\candidate.json",
+  "output": "E:\\S5_mini_pro\\smart-mess\\docs\\architecture\\smart-mess-architecture.html",
+  "specification": {
+    "sha256": "0f2cad62bc6cc8b05370ec1257b5ac1b5a6530534c92738379847d5ea587872a",
+    "bytes": 10705
+  },
+  "artifact": {
+    "sha256": "c5d3c76f3a239655a03b721dc693d42e793f3193d4777ddf76bb873a1e0976d2",
+    "bytes": 874107
+  }
+}

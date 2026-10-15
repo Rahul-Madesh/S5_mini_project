@@ -22,6 +22,26 @@
  * 18. Voting rejection after poll is closed (409)
  */
 
+const path = require('path');
+const fs = require('fs');
+try {
+  require('../backend/node_modules/dotenv').config({ path: path.resolve(__dirname, '../backend/.env') });
+} catch (e) {
+  // Fallback env parser
+  if (fs.existsSync(path.resolve(__dirname, '../backend/.env'))) {
+    const lines = fs.readFileSync(path.resolve(__dirname, '../backend/.env'), 'utf8').split('\n');
+    lines.forEach(line => {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        const key = match[1];
+        let val = match[2] || '';
+        val = val.trim().replace(/^['"]|['"]$/g, '');
+        if (!process.env[key]) process.env[key] = val;
+      }
+    });
+  }
+}
+
 const BASE_URL = process.env.TEST_API_URL || 'http://localhost:5000';
 
 let homeUserCookie = '';

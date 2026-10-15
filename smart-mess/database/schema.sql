@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS polls (
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     closes_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_polls_date_type UNIQUE (meal_date, meal_type),
     INDEX idx_polls_active_date (is_active, meal_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -77,6 +77,16 @@ async function runSetup() {
     await initialConnection.query(schemaSql);
     console.log('Schema tables verified/created successfully.');
 
+    // 2b. Safe migration: ensure uq_polls_date_type unique index exists on polls
+    const [existingIndexes] = await initialConnection.query(
+      "SELECT INDEX_NAME FROM information_schema.statistics WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'polls' AND INDEX_NAME = 'uq_polls_date_type'"
+    );
+    if (existingIndexes.length === 0) {
+      console.log('Applying safe migration: adding uq_polls_date_type unique constraint...');
+      await initialConnection.query('ALTER TABLE polls ADD CONSTRAINT uq_polls_date_type UNIQUE (meal_date, meal_type)');
+      console.log('Migration applied: uq_polls_date_type added.');
+    }
+
     // 3. Check if polls table already has records; run seed.sql if empty
     const [existingPolls] = await initialConnection.query('SELECT COUNT(*) AS count FROM polls');
     if (existingPolls[0].count === 0) {

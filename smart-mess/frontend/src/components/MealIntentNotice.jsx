@@ -49,9 +49,8 @@ export default function MealIntentNotice({ onAnswerUpdated }) {
       if (!res.ok) {
         setErrorMsg(result.details || result.error || 'Failed to submit intention');
       } else {
-        setSuccessMsg(`Your response ("${willEat ? "Yes, I'll eat" : "No, I won't"}") has been recorded.`);
+        setSuccessMsg(`Your attendance plan ("${willEat ? "Attending" : "Not attending"}") has been recorded.`);
         setIsEditing(false);
-        // Refresh intent data
         await fetchIntentStatus();
         if (onAnswerUpdated) onAnswerUpdated();
       }
@@ -64,14 +63,11 @@ export default function MealIntentNotice({ onAnswerUpdated }) {
 
   if (loading) return null;
   if (!noticeData || !noticeData.meal) return null;
-
-  // If dismissed without answering in this session, hide it
   if (dismissed) return null;
 
   const hasAnswered = noticeData.answer !== null;
   const isCutoffLocked = !noticeData.canChange;
 
-  // Format date nicely
   const mealDateFormatted = new Date(`${noticeData.meal.date}T00:00:00`).toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -79,30 +75,38 @@ export default function MealIntentNotice({ onAnswerUpdated }) {
   });
 
   return (
-    <div className="intent-notice-banner" id="meal-intent-banner">
+    <div className="intent-notice-card" id="meal-intent-banner">
       <div className="intent-header">
-        <div className="intent-title">
-          <span>🔔</span>
-          <span>Upcoming Meal Attendance Notification</span>
+        <div className="intent-badge-group">
+          <span className="badge-tag" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>
+            Official Dining Notice
+          </span>
+          <span className="badge-tag">
+            {noticeData.meal.type} Service
+          </span>
         </div>
         {!hasAnswered && (
           <button
             onClick={() => setDismissed(true)}
             className="intent-dismiss-btn"
-            title="Dismiss for now (reappears on next refresh)"
+            title="Dismiss for now"
             id="dismiss-intent-notice"
+            aria-label="Dismiss notice"
           >
             &times;
           </button>
         )}
       </div>
 
-      <p style={{ fontSize: '0.95rem', color: '#e2e8f0', marginBottom: '0.5rem' }}>
-        <strong>Will you eat mess food for {noticeData.meal.type.toUpperCase()} on {mealDateFormatted}?</strong>
+      <h3 className="intent-prompt">
+        Will you attend mess dining for {noticeData.meal.type} on {mealDateFormatted}?
+      </h3>
+      <p className="intent-timing-info">
+        Kitchen preparation relies on accurate resident headcounts to prevent food wastage.
       </p>
 
-      {errorMsg && <div className="alert alert-error" style={{ margin: '0.5rem 0' }}>{errorMsg}</div>}
-      {successMsg && <div className="alert alert-success" style={{ margin: '0.5rem 0' }}>{successMsg}</div>}
+      {errorMsg && <div className="alert alert-error" style={{ margin: '0.75rem 0' }}>{errorMsg}</div>}
+      {successMsg && <div className="alert alert-success" style={{ margin: '0.75rem 0' }}>{successMsg}</div>}
 
       {!hasAnswered || isEditing ? (
         <div>
@@ -113,7 +117,7 @@ export default function MealIntentNotice({ onAnswerUpdated }) {
               className="btn btn-primary"
               id="intent-yes-btn"
             >
-              {submitting ? 'Submitting...' : "Yes, I'll eat"}
+              {submitting ? 'Recording...' : "Yes, I will eat"}
             </button>
             <button
               onClick={() => handleResponse(false)}
@@ -121,28 +125,27 @@ export default function MealIntentNotice({ onAnswerUpdated }) {
               className="btn btn-secondary"
               id="intent-no-btn"
             >
-              {submitting ? 'Submitting...' : "No, I won't"}
+              {submitting ? 'Recording...' : "No, skip this meal"}
             </button>
             {isEditing && (
               <button
                 onClick={() => setIsEditing(false)}
-                className="btn btn-secondary"
-                style={{ opacity: 0.8 }}
+                className="btn btn-secondary btn-sm"
               >
                 Cancel
               </button>
             )}
           </div>
-          <p className="form-hint" style={{ marginTop: '0.5rem' }}>
-            Note: You can change your choice until the cutoff time. After cutoff, responses lock for kitchen preparation.
+          <p className="form-hint" style={{ marginTop: '0.65rem' }}>
+            Note: You may adjust your plan anytime prior to the kitchen cutoff deadline.
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.85rem', paddingTop: '0.85rem', borderTop: '1px solid var(--border-subtle)' }}>
           <div>
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Your current answer: </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Your recorded plan: </span>
             <strong style={{ color: noticeData.answer ? 'var(--primary)' : 'var(--danger)', fontSize: '0.95rem' }}>
-              {noticeData.answer ? "Yes, I'll eat" : "No, I won't eat"}
+              {noticeData.answer ? "Yes, Attending" : "No, Skipping Meal"}
             </strong>
           </div>
 
@@ -156,8 +159,8 @@ export default function MealIntentNotice({ onAnswerUpdated }) {
                 Change answer
               </button>
             ) : (
-              <span className="badge-tag" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5' }}>
-                Cutoff passed (Answer locked)
+              <span className="badge-tag" style={{ backgroundColor: 'rgba(244, 63, 94, 0.15)', color: '#fb7185' }}>
+                Cutoff passed (Locked)
               </span>
             )}
           </div>

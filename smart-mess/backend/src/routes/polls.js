@@ -3,6 +3,7 @@ const { z } = require('zod');
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const { validateBody } = require('../middleware/validate');
+const pollService = require('../services/pollService');
 
 const router = express.Router();
 
@@ -47,22 +48,16 @@ async function getPollResultsData(pollId) {
 // GET /api/polls/active
 router.get('/active', requireAuth, async (req, res, next) => {
   try {
-    const [polls] = await db.query(
-      `SELECT id, title, description, meal_date, meal_type, is_active, closes_at, created_at
-       FROM polls
-       WHERE is_active = 1
-       ORDER BY id DESC
-       LIMIT 1`
-    );
+    const testDate = req.headers['x-test-date'] || (req.query.test_date && process.env.NODE_ENV !== 'production' ? req.query.test_date : null);
+    const poll = await pollService.getActivePoll(testDate);
 
-    if (polls.length === 0) {
+    if (!poll) {
       return res.json({
         poll: null,
         message: 'No active poll currently available.'
       });
     }
 
-    const poll = polls[0];
     const pollId = poll.id;
 
     // Check user's own vote
@@ -84,13 +79,15 @@ router.get('/active', requireAuth, async (req, res, next) => {
     // Get items and results
     const results = await getPollResultsData(pollId);
 
-    // Check if poll cutoff has passed
+    // Check if poll cutoff has passed or poll date is expired
+    const todayStr = testDate || pollService.getLocalDateString();
     const isPastClosesAt = poll.closes_at ? new Date(poll.closes_at) <= new Date() : false;
+    const isPastMealDate = poll.meal_date < todayStr;
 
     return res.json({
       poll: {
         ...poll,
-        is_closed: !poll.is_active || isPastClosesAt
+        is_closed: !poll.is_active || isPastClosesAt || isPastMealDate
       },
       userVote,
       results
@@ -138,7 +135,7 @@ router.post('/:id/vote', requireAuth, validateBody(voteSchema), async (req, res,
 
     // 1. Verify poll existence and status
     const [polls] = await db.query(
-      'SELECT id, is_active, closes_at FROM polls WHERE id = ?',
+      'SELECT id, is_active, closes_at, DATE_FORMAT(meal_date, "%Y-%m-%d") AS meal_date FROM polls WHERE id = ?',
       [pollId]
     );
 
@@ -151,8 +148,10 @@ router.post('/:id/vote', requireAuth, validateBody(voteSchema), async (req, res,
 
     const poll = polls[0];
     const isPastClosesAt = poll.closes_at ? new Date(poll.closes_at) <= new Date() : false;
+    const todayStr = pollService.getLocalDateString();
+    const isPastMealDate = poll.meal_date < todayStr;
 
-    if (!poll.is_active || isPastClosesAt) {
+    if (!poll.is_active || isPastClosesAt || isPastMealDate) {
       return res.status(409).json({
         error: 'Poll closed',
         details: 'This poll is no longer active or has passed its voting deadline.'
@@ -193,7 +192,8 @@ router.post('/:id/vote', requireAuth, validateBody(voteSchema), async (req, res,
          FROM polls p
          WHERE p.id = ? 
            AND p.is_active = 1 
-           AND (p.closes_at IS NULL OR p.closes_at > NOW())`,
+           AND (p.closes_at IS NULL OR p.closes_at > NOW())
+           AND p.meal_date >= CURDATE()`,
         [menu_item_id, userId, pollId]
       );
 

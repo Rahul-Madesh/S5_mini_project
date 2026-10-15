@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "E:\\S5_mini_pro\\smart-mess\\.archify\\candidate.json",
+    "sha256": "0f2cad62bc6cc8b05370ec1257b5ac1b5a6530534c92738379847d5ea587872a",
+    "bytes": 10705
+  },
+  "artifact": {
+    "path": "E:\\S5_mini_pro\\smart-mess\\docs\\architecture\\smart-mess-architecture.html",
+    "sha256": "c5d3c76f3a239655a03b721dc693d42e793f3193d4777ddf76bb873a1e0976d2",
+    "bytes": 874107
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "E:\\S5_mini_pro\\smart-mess\\docs\\architecture\\smart-mess-architecture.finalize.json",
+    "summaryReceipt": "E:\\S5_mini_pro\\smart-mess\\docs\\architecture\\smart-mess-architecture.finalize-summary.json",
+    "browserCheckReceipt": "E:\\S5_mini_pro\\smart-mess\\docs\\architecture\\smart-mess-architecture.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.1.0",
+    "availableVersion": "3.1.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-15T05:01:23.289Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3906,
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 1
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "from": "internalStudent",
+            "to": "boysMessMenu",
+            "label": "PDF View",
+            "collectionIndex": 1,
+            "artifactIndex": 2
+          },
+          "right": {
+            "from": "internalStudent",
+            "to": "authContext",
+            "label": "Hosteller Auth",
+            "collectionIndex": 2,
+            "artifactIndex": 3
+          },
+          "point": [
+            226,
+            212
+          ],
+          "sharedNode": "internalStudent"
+        }
+      ],
+      "detours": [],
+      "truncated": false
+    },
+    "hints": [
+      "internalStudent → boysMessMenu and internalStudent → authContext cross next to internalStudent: move node boysMessMenu or authContext so the two reach internalStudent from different sides (for example one level with it, one directly above or below it)."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

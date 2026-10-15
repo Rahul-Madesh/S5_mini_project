@@ -11,21 +11,33 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const getRoleLabel = () => {
+    if (!user) return '';
+    if (user.role === 'admin') return 'Kitchen Admin';
+    if (user.student_type === 'home' || user.student_type === 'internal') {
+      return 'Internal Resident';
+    }
+    return 'Visiting Student';
+  };
+
   return (
-    <nav className="navbar">
+    <nav className="navbar" role="navigation" aria-label="Main navigation">
       <div className="nav-brand">
-        <div className="nav-logo-icon">M</div>
-        <Link to={user?.role === 'admin' ? '/admin' : '/poll'} style={{ color: 'var(--text-main)' }}>
-          Smart Mess Agent
-        </Link>
+        <div className="nav-logo-icon" aria-hidden="true">M</div>
+        <div className="nav-title-group">
+          <Link to={user?.role === 'admin' ? '/admin' : '/poll'} className="nav-brand-title">
+            Smart Mess
+          </Link>
+          <span className="nav-brand-subtitle">Dining & Food Waste Agent</span>
+        </div>
       </div>
 
       {user && (
         <div className="nav-user-meta">
           <div className="user-badge">
-            <span>{user.name}</span>
+            <span style={{ fontWeight: 600 }}>{user.name}</span>
             <span className={`badge-tag ${user.role === 'admin' ? 'admin' : ''}`}>
-              {user.student_type ? `${user.student_type} student` : user.role}
+              {getRoleLabel()}
             </span>
           </div>
 
